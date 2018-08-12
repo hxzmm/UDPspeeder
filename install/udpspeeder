@@ -90,7 +90,8 @@ case "$1" in
         stop
         ;;
   status)
-        status
+        status -p ${SPEEDER_PIDFILE} $SPEEDER
+        RETVAL=$?
         ;;
   restart)
         stop
