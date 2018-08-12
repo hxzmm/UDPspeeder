@@ -19,7 +19,6 @@ BASE=$(basename $0)
 SPEEDER=/root/udpspeeder/speederv2
 SPEEDER_CONF=/root/udpspeeder/udpspeeder.conf
 SPEEDER_PIDFILE=/var/run/$BASE.pid
-SPEEDER_LOGFILE=/var/log/$BASE.log
 SPEEDER_LOCKFILE=/var/lock/subsys/$BASE
 SPEEDER_OPTS="-s -l 0.0.0.0:30000 -r 127.0.0.1:10000 -f20:10"
 
@@ -29,7 +28,7 @@ fi
 
 # Check udpspeeder server is present
 if [ ! -x $SPEEDER ]; then
-    echo "$KCPTUN not present or not executable!"
+    echo "$SPEEDER not present or not executable!"
     exit 1
 fi
 
@@ -52,12 +51,12 @@ start() {
     fi
 
     echo -n $"Starting $BASE: "
-    $SPEEDER --log ${SPEEDER_LOGFILE} $SPEEDER_OPTS &
+    $SPEEDER $SPEEDER_OPTS &
     RETVAL=$?
 
     if [ "$RETVAL" = "0" ]; then
         sleep 2
-        ps -A o pid,cmd | grep "$SPEEDER --log ${SPEEDER_PIDFILE} $SPEEDER_OPTS" | awk '{print $1}' | head -n 1 > ${SPEEDER_PIDFILE}
+        ps -A o pid,cmd | grep "$SPEEDER $SPEEDER_OPTS" | awk '{print $1}' | head -n 1 > ${SPEEDER_PIDFILE}
     else
         failure
     fi
@@ -85,8 +84,7 @@ case "$1" in
         stop
         ;;
   status)
-        status -p ${SPEEDER_PIDFILE} $SPEEDER
-        RETVAL=$?
+        status
         ;;
   restart)
         stop
@@ -94,7 +92,7 @@ case "$1" in
         ;;
   *)
         echo $"Usage: $BASE { start | stop | restart | status }"
-        RETVAL=2
+        RETVAL=1
         ;;
 esac
 
