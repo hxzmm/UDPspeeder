@@ -4,10 +4,12 @@
 #
 ### BEGIN INIT INFO
 # Provides: udpspeeder
-# Required-Start: $network $syslog
-# Required-Stop: $network
-# Default-Start: 2 3 4 5
-# Default-Stop: 0 1 6
+# Required-Start: $network $syslog $local_fs $remote_fs $named
+# Required-Stop: $network $local_fs $remote_fs
+# Should-Start:
+# Should-Stop:
+# Default-Start:
+# Default-Stop:
 # Description: Start or stop the udpspeeder
 ### END INIT INFO
 
