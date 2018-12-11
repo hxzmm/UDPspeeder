@@ -1,0 +1,104 @@
+#!/bin/bash
+# chkconfig: 2345 90 10
+# description: Start or stop the udpspeeder
+#
+# processname: udpspeeder
+# config: /etc/sysconfig/udpspeeder
+# pidfile: /var/run/udpspeeder.pid
+
+### BEGIN INIT INFO
+# Provides: udpspeeder
+# Required-Start: $network $syslog $local_fs $remote_fs $named
+# Required-Stop: $network $local_fs $remote_fs
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Description: Start or stop the udpspeeder
+### END INIT INFO
+
+# Author: hxzmm
+
+BASE=$(basename $0)
+
+# modify these in /etc/sysconfig/$BASE
+SPEEDER=/root/udpspeeder/speederv2
+SPEEDER_CONF=/root/udpspeeder/udpspeeder.conf
+SPEEDER_PIDFILE=/var/run/$BASE.pid
+SPEEDER_LOCKFILE=/var/lock/subsys/$BASE
+SPEEDER_OPTS="-s -l 0.0.0.0:30000 -r 127.0.0.1:10000 -f20:10"
+
+if [ -f $SPEEDER_CONF ]; then
+    . $SPEEDER_CONF
+fi
+
+# Check udpspeeder server is present
+if [ ! -x $SPEEDER ]; then
+    echo "$SPEEDER not present or not executable!"
+    exit 1
+fi
+
+RETVAL=0
+STOP_TIMEOUT=${STOP_TIMEOUT-10}
+
+start() {
+
+    if [ -f ${SPEEDER_LOCKFILE} ]; then
+
+        if [ -s ${SPEEDER_PIDFILE} ]; then
+            echo "$BASE might be still running, stop it first!"
+            killproc -p ${SPEEDER_PIDFILE} -d ${STOP_TIMEOUT} $SPEEDER
+        else
+            echo "$BASE was not shut down correctly!"
+        fi
+
+        rm -f ${SPEEDER_PIDFILE} ${SPEEDER_LOCKFILE}
+        sleep 2
+    fi
+
+    echo -n $"Starting $BASE: "
+    $SPEEDER $SPEEDER_OPTS &
+    RETVAL=$?
+
+    if [ "$RETVAL" = "0" ]; then
+        sleep 2
+        ps -A o pid,cmd | grep "$SPEEDER $SPEEDER_OPTS" | awk '{print $1}' | head -n 1 > ${SPEEDER_PIDFILE}
+    else
+        failure
+    fi
+    echo
+
+    [ $RETVAL = 0 ] && touch ${SPEEDER_LOCKFILE}
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Stopping $BASE: "
+    killproc -p ${SPEEDER_PIDFILE} -d ${STOP_TIMEOUT} $SPEEDER
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && rm -f ${SPEEDER_PIDFILE} ${SPEEDER_LOCKFILE}
+    return $RETVAL
+}
+
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status -p ${SPEEDER_PIDFILE} $SPEEDER
+        RETVAL=$?
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: $BASE { start | stop | restart | status }"
+        RETVAL=1
+        ;;
+esac
+
+exit $RETVAL
