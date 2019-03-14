@@ -24,6 +24,7 @@ SPEEDER=/root/udpspeeder/speederv2
 SPEEDER_CONF=/root/udpspeeder/udpspeeder.conf
 SPEEDER_PIDFILE=/var/run/$BASE.pid
 SPEEDER_LOCKFILE=/var/lock/subsys/$BASE
+SPEEDER_LOG=/var/log/udpspeeder.log
 SPEEDER_OPTS="-s -l 0.0.0.0:30000 -r 127.0.0.1:10000 -f20:10"
 
 if [ -f $SPEEDER_CONF ]; then
@@ -55,7 +56,7 @@ start() {
     fi
 
     echo -n $"Starting $BASE: "
-    $SPEEDER $SPEEDER_OPTS &
+    $SPEEDER $SPEEDER_OPTS > $SPEEDER_LOG 2>&1 &
     RETVAL=$?
 
     if [ "$RETVAL" = "0" ]; then
