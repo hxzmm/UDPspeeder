@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=root
 EnvironmentFile=-/root/udpspeeder/udpspeeder.conf
-ExecStart=/root/udpspeeder/speederv2 ${SPEEDER_OPTS}
+ExecStart=/root/udpspeeder/speederv2 $SPEEDER_OPTS
 Restart=always
 RestartSec=5
 
